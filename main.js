@@ -1,4 +1,5 @@
-const { app, BrowserWindow} = require("electron")
+const { app, BrowserWindow, ipcMain, dialog } = require("electron")
+
 
 function createWindow() {
   const win = new BrowserWindow({
@@ -12,5 +13,14 @@ function createWindow() {
   win.loadFile('index.html')
 }
 
-app.whenReady().then(createWindow)
+app.whenReady().then(() => {
+  ipcMain.handle('open-folder', async () => {
+    const result = await dialog.showOpenDialog({
+        properties: ['openDirectory']
+    })
+    if (result.canceled) return null
+    return result.filePaths[0]
+  })
+  createWindow()
+})
 
