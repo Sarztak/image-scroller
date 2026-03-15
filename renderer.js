@@ -25,13 +25,18 @@ scrollContainer.addEventListener('scrollend', () => {
 
     // scrolled into left clones
     if (scrollContainer.scrollLeft < leftCloneEnd) {
+        scrollContainer.style.scrollBehavior = 'auto'
         scrollContainer.scrollLeft = scrollContainer.scrollLeft + images.length * imageWidth
+        scrollContainer.style.scrollBehavior = ''
         focusedIndex = images.length - 1
     }
 
     // scrolled into right clones
     if (scrollContainer.scrollLeft >= rightCloneStart) {
+        scrollContainer.style.scrollBehavior = 'auto'
+        focusedIndex = images.length - 1
         scrollContainer.scrollLeft = scrollContainer.scrollLeft - images.length * imageWidth
+        scrollContainer.style.scrollBehavior = ''
         focusedIndex = 0
     }
     updateUI(focusedIndex)
@@ -116,7 +121,7 @@ function loadImages(folderPath) {
     if (images.length === 0) return
 
     buildStrip();
-
+    setTileHeight(); // pixels are not set correctly in electron
 }
 
 function buildStrip() {
@@ -164,5 +169,10 @@ function addClones() {
     }
 }
 
-
+function setTileHeight() {
+    const height = scrollContainer.clientHeight
+    tiles.forEach(tile => {
+        tile.style.height = height + 'px'
+    })
+}
 

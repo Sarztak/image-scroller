@@ -4,13 +4,14 @@ const { app, BrowserWindow, ipcMain, dialog } = require("electron")
 function createWindow() {
   const win = new BrowserWindow({
     width: 2000,
-    height: 800,
+    height: 1000,
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false
     }
   })
   win.loadFile('index.html')
+  win.webContents.openDevTools()
 }
 
 app.whenReady().then(() => {
