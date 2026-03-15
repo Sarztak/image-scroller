@@ -1,6 +1,6 @@
 const { ipcRenderer } = require('electron');
 const path = require('path');
-const fs = require('fs');
+const fs = require('fs')
 
 const scrollContainer = document.getElementById('scroll-container');
 const openButton = document.getElementById('open-button');
@@ -9,6 +9,12 @@ let images = [];
 let tiles = [];
 let focusedIndex = 0;
 const CLONE_COUNT = 2;
+
+//window resizer to resize the window and the images once the window is maximized
+window.addEventListener('resize', () => {
+    if (images.length === 0) return
+    buildStrip()
+})
 
 openButton.addEventListener('click', () => {
     ipcRenderer.invoke('open-folder').then((folderPath) => {
@@ -77,14 +83,14 @@ scrollContainer.addEventListener('wheel', (event) => {
     updateUI(focusedIndex)
     scrollToImage(focusedIndex)
 
-    setTimeout(() => {isScrolling = false}, 300)
+    setTimeout(() => { isScrolling = false }, 300)
 })
 
 
 function getStateClass(tileIndex, focusedIndex) {
     const distance = Math.abs(tileIndex - focusedIndex)
     const circularDistance = Math.min(distance, images.length - distance)
-    
+
     if (circularDistance === 0) return 'focused'
     if (circularDistance === 1) return 'adjacent'
     return 'distance'
@@ -100,7 +106,7 @@ function updateUI(focusedIndex) {
 function scrollToImage(index) {
     const imageWidth = tiles[0].clientWidth
     const targetScrollLeft = (CLONE_COUNT + index) * imageWidth
-    
+
     scrollContainer.scrollTo({
         left: targetScrollLeft,
         behavior: 'smooth'
@@ -115,13 +121,13 @@ function loadImages(folderPath) {
     const validExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp']
 
     images = fs.readdirSync(folderPath)
-            .filter(file => validExtensions.includes(path.extname(file).toLowerCase()))
-            .map(file => path.join(folderPath, file))
-    
+        .filter(file => validExtensions.includes(path.extname(file).toLowerCase()))
+        .map(file => path.join(folderPath, file))
+
     if (images.length === 0) return
 
     buildStrip();
-    setTileHeight(); // pixels are not set correctly in electron
+    setTileDimensions(); // pixels are not set correctly in electron therefore there is a padding on y which i don't want
 }
 
 function buildStrip() {
@@ -136,8 +142,10 @@ function buildStrip() {
         tiles.push(tile)
     })
 
+    setTileDimensions() // set dimensions in px
+
     addClones() // add clones
-    
+
     updateUI(focusedIndex) // assign initial classes
 
     scrollToImage(focusedIndex) // scroll to first real image not clone
@@ -169,10 +177,12 @@ function addClones() {
     }
 }
 
-function setTileHeight() {
-    const height = scrollContainer.clientHeight
+function setTileDimensions() {
+    const width = window.innerWidth * 0.8
+    const height = window.innerHeight * 0.9
     tiles.forEach(tile => {
         tile.style.height = height + 'px'
+        tile.style.width = width + 'px'
     })
 }
 

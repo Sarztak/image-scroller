@@ -3,21 +3,23 @@ const { app, BrowserWindow, ipcMain, dialog } = require("electron")
 
 function createWindow() {
   const win = new BrowserWindow({
-    width: 2000,
-    height: 1000,
+    // width: 2000,
+    // height: 800,
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false
     }
   })
+  win.maximize() // open the app in maximized window
+  win.show()
   win.loadFile('index.html')
-  win.webContents.openDevTools()
+  // win.webContents.openDevTools()
 }
 
 app.whenReady().then(() => {
   ipcMain.handle('open-folder', async () => {
     const result = await dialog.showOpenDialog({
-        properties: ['openDirectory']
+      properties: ['openDirectory']
     })
     if (result.canceled) return null
     return result.filePaths[0]
