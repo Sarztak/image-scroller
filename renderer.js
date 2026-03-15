@@ -13,7 +13,7 @@ const CLONE_COUNT = 2;
 //window resizer to resize the window and the images once the window is maximized
 window.addEventListener('resize', () => {
     if (images.length === 0) return
-    buildStrip()
+    setTileDimensions()
 })
 
 openButton.addEventListener('click', () => {
@@ -114,9 +114,6 @@ function scrollToImage(index) {
 }
 
 
-
-
-
 function loadImages(folderPath) {
     const validExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp']
 
@@ -125,9 +122,7 @@ function loadImages(folderPath) {
         .map(file => path.join(folderPath, file))
 
     if (images.length === 0) return
-
     buildStrip();
-    setTileDimensions(); // pixels are not set correctly in electron therefore there is a padding on y which i don't want
 }
 
 function buildStrip() {
@@ -136,15 +131,16 @@ function buildStrip() {
     focusedIndex = 0
 
     // create image tiles
-    images.forEach((imagePath, index) => {
-        const tile = createTile(imagePath, index)
+    images.forEach((imagePath) => {
+        const tile = createTile(imagePath)
         scrollContainer.appendChild(tile)
         tiles.push(tile)
     })
 
-    setTileDimensions() // set dimensions in px
 
     addClones() // add clones
+
+    setTileDimensions() // set dimensions in px
 
     updateUI(focusedIndex) // assign initial classes
 
@@ -152,7 +148,7 @@ function buildStrip() {
 
 }
 
-function createTile(imagePath, index) {
+function createTile(imagePath) {
     const tile = document.createElement('div')
     tile.className = 'image-tile'
 
@@ -165,13 +161,13 @@ function createTile(imagePath, index) {
 
 function addClones() {
     for (let i = images.length - CLONE_COUNT; i < images.length; i++) {
-        const clone = createTile(images[i], i)
+        const clone = createTile(images[i])
         clone.dataset.clone = 'left'
         scrollContainer.prepend(clone)
     }
 
     for (let i = 0; i < CLONE_COUNT; i++) {
-        const clone = createTile(images[i], i)
+        const clone = createTile(images[i])
         clone.dataset.clone = 'right'
         scrollContainer.appendChild(clone)
     }
@@ -180,7 +176,8 @@ function addClones() {
 function setTileDimensions() {
     const width = window.innerWidth * 0.8
     const height = window.innerHeight * 0.9
-    tiles.forEach(tile => {
+    // the dimensions needs to be updated on all the elements including the clones not just on tiles
+    document.querySelectorAll('.image-tile').forEach(tile => {
         tile.style.height = height + 'px'
         tile.style.width = width + 'px'
     })
