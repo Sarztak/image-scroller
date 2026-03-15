@@ -1,5 +1,8 @@
 const { app, BrowserWindow, ipcMain, dialog } = require("electron")
 
+try {
+  require('electron-reloader')(module)
+} catch { }
 
 function createWindow() {
   const win = new BrowserWindow({
@@ -13,7 +16,7 @@ function createWindow() {
   win.maximize() // open the app in maximized window
   win.show()
   win.loadFile('index.html')
-  // win.webContents.openDevTools()
+  win.webContents.openDevTools()
 }
 
 app.whenReady().then(() => {

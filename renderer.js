@@ -1,6 +1,6 @@
 const { ipcRenderer } = require('electron');
 const path = require('path');
-const fs = require('fs')
+const fs = require('fs');
 
 const scrollContainer = document.getElementById('scroll-container');
 const openButton = document.getElementById('open-button');
@@ -25,12 +25,20 @@ openButton.addEventListener('click', () => {
 
 // detect if we are on clones after the scroll settles
 scrollContainer.addEventListener('scrollend', () => {
-    const imageWidth = tiles[0].clientWidth
-    const leftCloneEnd = imageWidth * CLONE_COUNT
-    const rightCloneStart = (images.length + CLONE_COUNT) * imageWidth
+    if (scrollEndInitialized) {
+        scrollEndInitialized = false
+        return
+    }
 
+    const imageWidth = tiles[0].clientWidth
+    const leftCloneEnd = Math.round(imageWidth * CLONE_COUNT)
+    const rightCloneStart = Math.round((images.length + CLONE_COUNT) * imageWidth)
+    const currentScroll = Math.round(scrollContainer.scrollLeft)
+    console.log('scrollend fired, scrollLeft:', currentScroll)
+    console.log('leftCloneEnd:', leftCloneEnd)
+    console.log('rightCloneStart:', rightCloneStart)
     // scrolled into left clones
-    if (scrollContainer.scrollLeft < leftCloneEnd) {
+    if (currentScroll < leftCloneEnd) {
         scrollContainer.style.scrollBehavior = 'auto'
         scrollContainer.scrollLeft = scrollContainer.scrollLeft + images.length * imageWidth
         scrollContainer.style.scrollBehavior = ''
@@ -38,9 +46,8 @@ scrollContainer.addEventListener('scrollend', () => {
     }
 
     // scrolled into right clones
-    if (scrollContainer.scrollLeft >= rightCloneStart) {
+    if (currentScroll >= rightCloneStart) {
         scrollContainer.style.scrollBehavior = 'auto'
-        focusedIndex = images.length - 1
         scrollContainer.scrollLeft = scrollContainer.scrollLeft - images.length * imageWidth
         scrollContainer.style.scrollBehavior = ''
         focusedIndex = 0
@@ -93,11 +100,12 @@ function getStateClass(tileIndex, focusedIndex) {
 
     if (circularDistance === 0) return 'focused'
     if (circularDistance === 1) return 'adjacent'
-    return 'distance'
+    return 'distant'
 }
 
 function updateUI(focusedIndex) {
     tiles.forEach((tile, index) => {
+        console.log(index, focusedIndex)
         const stateClass = getStateClass(index, focusedIndex)
         tile.className = `image-tile ${stateClass}`
     })
@@ -125,6 +133,8 @@ function loadImages(folderPath) {
     buildStrip();
 }
 
+let scrollEndInitialized = false
+
 function buildStrip() {
     scrollContainer.innerHTML = ''
     tiles = []
@@ -144,8 +154,13 @@ function buildStrip() {
 
     updateUI(focusedIndex) // assign initial classes
 
-    scrollToImage(focusedIndex) // scroll to first real image not clone
 
+    requestAnimationFrame(() => { // scroll only after the DOM is rendered
+        scrollEndInitialized = true
+        scrollContainer.style.scrollBehavior = 'auto'
+        scrollContainer.scrollLeft = CLONE_COUNT * tiles[0].clientWidth
+        scrollContainer.style.scrollBehavior = ''
+    })
 }
 
 function createTile(imagePath) {
@@ -160,7 +175,7 @@ function createTile(imagePath) {
 }
 
 function addClones() {
-    for (let i = images.length - CLONE_COUNT; i < images.length; i++) {
+    for (let i = images.length - 1; i >= images.length - CLONE_COUNT; i--) {
         const clone = createTile(images[i])
         clone.dataset.clone = 'left'
         scrollContainer.prepend(clone)
