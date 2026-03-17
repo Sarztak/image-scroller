@@ -57,16 +57,29 @@ scrollContainer.addEventListener('scrollend', () => {
 
 
 document.addEventListener('keydown', (event) => {
+    const imageWidth = tiles[0].clientWidth
     if (event.key === 'ArrowRight') {
         focusedIndex = (focusedIndex + 1) % images.length
         updateUI(focusedIndex)
-        scrollToImage(focusedIndex)
+        if (focusedIndex === 0) {
+            scrollContainer.style.scrollBehavior = 'auto'
+            scrollContainer.scrollLeft = CLONE_COUNT * imageWidth
+            scrollContainer.style.scrollBehavior = ''
+        } else {
+            scrollToImage(focusedIndex)
+        }
     }
 
     if (event.key === 'ArrowLeft') {
         focusedIndex = (focusedIndex - 1 + images.length) % images.length
         updateUI(focusedIndex)
-        scrollToImage(focusedIndex)
+        if (focusedIndex === images.length - 1) {
+            scrollContainer.style.scrollBehavior = 'auto'
+            scrollContainer.scrollLeft = (CLONE_COUNT + images.length - 1) * imageWidth
+            scrollContainer.style.scrollBehavior = ''
+        } else {
+            scrollToImage(focusedIndex)
+        }
     }
 })
 
