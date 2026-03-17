@@ -24,39 +24,41 @@ openButton.addEventListener('click', () => {
 })
 
 // detect if we are on clones after the scroll settles
-scrollContainer.addEventListener('scrollend', () => {
-    if (scrollEndInitialized) {
-        scrollEndInitialized = false
-        return
-    }
-
-    const imageWidth = tiles[0].clientWidth
-    const leftCloneEnd = Math.round(imageWidth * CLONE_COUNT)
-    const rightCloneStart = Math.round((images.length + CLONE_COUNT) * imageWidth)
-    const currentScroll = Math.round(scrollContainer.scrollLeft)
-    console.log('scrollend fired, scrollLeft:', currentScroll)
-    console.log('leftCloneEnd:', leftCloneEnd)
-    console.log('rightCloneStart:', rightCloneStart)
-    // scrolled into left clones
-    if (currentScroll < leftCloneEnd) {
-        scrollContainer.style.scrollBehavior = 'auto'
-        scrollContainer.scrollLeft = scrollContainer.scrollLeft + images.length * imageWidth
-        scrollContainer.style.scrollBehavior = ''
-        focusedIndex = images.length - 1
-    }
-
-    // scrolled into right clones
-    if (currentScroll >= rightCloneStart) {
-        scrollContainer.style.scrollBehavior = 'auto'
-        scrollContainer.scrollLeft = scrollContainer.scrollLeft - images.length * imageWidth
-        scrollContainer.style.scrollBehavior = ''
-        focusedIndex = 0
-    }
-    updateUI(focusedIndex)
-})
+// scrollContainer.addEventListener('scrollend', () => {
+//     if (scrollEndInitialized) {
+//         scrollEndInitialized = false
+//         return
+//     }
+//
+//     const imageWidth = tiles[0].clientWidth
+//     const leftCloneEnd = Math.round(imageWidth * CLONE_COUNT)
+//     const rightCloneStart = Math.round((images.length + CLONE_COUNT) * imageWidth)
+//     const currentScroll = Math.round(scrollContainer.scrollLeft)
+//     console.log('scrollend fired, scrollLeft:', currentScroll)
+//     console.log('leftCloneEnd:', leftCloneEnd)
+//     console.log('rightCloneStart:', rightCloneStart)
+//     // scrolled into left clones
+//     // if (currentScroll < leftCloneEnd) {
+//     //     scrollContainer.style.scrollBehavior = 'auto'
+//     //     scrollContainer.scrollLeft = scrollContainer.scrollLeft + images.length * imageWidth
+//     //     scrollContainer.style.scrollBehavior = ''
+//     //     focusedIndex = images.length - 1
+//     // }
+//     //
+//     // // scrolled into right clones
+//     // if (currentScroll >= rightCloneStart) {
+//     //     scrollContainer.style.scrollBehavior = 'auto'
+//     //     scrollContainer.scrollLeft = scrollContainer.scrollLeft - images.length * imageWidth
+//     //     scrollContainer.style.scrollBehavior = ''
+//     //     focusedIndex = 0
+//     // }
+//     updateUI(focusedIndex)
+// })
 
 
 document.addEventListener('keydown', (event) => {
+    console.log('key pressed:', event.key)
+    if (tiles.length === 0) return
     const imageWidth = tiles[0].clientWidth
     if (event.key === 'ArrowRight') {
         focusedIndex = (focusedIndex + 1) % images.length
@@ -127,11 +129,9 @@ function updateUI(focusedIndex) {
 function scrollToImage(index) {
     const imageWidth = tiles[0].clientWidth
     const targetScrollLeft = (CLONE_COUNT + index) * imageWidth
-
-    scrollContainer.scrollTo({
-        left: targetScrollLeft,
-        behavior: 'smooth'
-    })
+    scrollContainer.style.scrollBehavior = 'auto'
+    scrollContainer.scrollLeft = targetScrollLeft
+    scrollContainer.style.scrollBehavior = ''
 }
 
 
