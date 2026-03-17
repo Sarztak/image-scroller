@@ -68,7 +68,7 @@ document.addEventListener('keydown', (event) => {
             scrollContainer.scrollLeft = CLONE_COUNT * imageWidth
             scrollContainer.style.scrollBehavior = ''
         } else {
-            scrollToImage(focusedIndex)
+            scrollContainer.scrollLeft = (CLONE_COUNT + focusedIndex) * imageWidth
         }
     }
 
@@ -80,7 +80,7 @@ document.addEventListener('keydown', (event) => {
             scrollContainer.scrollLeft = (CLONE_COUNT + images.length - 1) * imageWidth
             scrollContainer.style.scrollBehavior = ''
         } else {
-            scrollToImage(focusedIndex)
+            scrollContainer.scrollLeft = (CLONE_COUNT + focusedIndex) * imageWidth
         }
     }
 })
@@ -93,17 +93,31 @@ scrollContainer.addEventListener('wheel', (event) => {
     event.preventDefault()
 
     if (isScrolling) return
-
     isScrolling = true
+
+    const imageWidth = tiles[0].clientWidth
 
     if (event.deltaY > 0) {
         focusedIndex = (focusedIndex + 1) % images.length
+        updateUI(focusedIndex)
+        if (focusedIndex === 0) {
+            scrollContainer.style.scrollBehavior = 'auto'
+            scrollContainer.scrollLeft = CLONE_COUNT * imageWidth
+            scrollContainer.style.scrollBehavior = ''
+        } else {
+            scrollContainer.scrollLeft = (CLONE_COUNT + focusedIndex) * imageWidth
+        }
     } else {
         focusedIndex = (focusedIndex - 1 + images.length) % images.length
+        updateUI(focusedIndex)
+        if (focusedIndex === images.length - 1) {
+            scrollContainer.style.scrollBehavior = 'auto'
+            scrollContainer.scrollLeft = (CLONE_COUNT + images.length - 1) * imageWidth
+            scrollContainer.style.scrollBehavior = ''
+        } else {
+            scrollContainer.scrollLeft = (CLONE_COUNT + focusedIndex) * imageWidth
+        }
     }
-
-    updateUI(focusedIndex)
-    scrollToImage(focusedIndex)
 
     setTimeout(() => { isScrolling = false }, 300)
 })
@@ -126,14 +140,13 @@ function updateUI(focusedIndex) {
     })
 }
 
-function scrollToImage(index) {
-    const imageWidth = tiles[0].clientWidth
-    const targetScrollLeft = (CLONE_COUNT + index) * imageWidth
-    scrollContainer.style.scrollBehavior = 'auto'
-    scrollContainer.scrollLeft = targetScrollLeft
-    scrollContainer.style.scrollBehavior = ''
-}
-
+// function scrollToImage(index) {
+//     const imageWidth = tiles[0].clientWidth
+//     const targetScrollLeft = (CLONE_COUNT + index) * imageWidth
+//     scrollContainer.style.scrollBehavior = 'auto'
+//     scrollContainer.scrollLeft = targetScrollLeft
+//     scrollContainer.style.scrollBehavior = ''
+// }
 
 function loadImages(folderPath) {
     const validExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp']

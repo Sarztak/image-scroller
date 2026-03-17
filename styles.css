@@ -21,6 +21,7 @@ body {
     align-items: center;
     padding: 0 10vw;
     box-sizing: border-box;
+    scroll-behavior: smooth;
 }
 
 .image-tile {
