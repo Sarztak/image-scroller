@@ -23,6 +23,17 @@ openButton.addEventListener('click', () => {
     })
 })
 
+function loadImages(folderPath) {
+    const validExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp']
+
+    images = fs.readdirSync(folderPath)
+        .filter(file => validExtensions.includes(path.extname(file).toLowerCase()))
+        .map(file => path.join(folderPath, file))
+
+    if (images.length === 0) return
+    buildStrip();
+}
+
 // detect if we are on clones after the scroll settles
 // scrollContainer.addEventListener('scrollend', () => {
 //     if (scrollEndInitialized) {
@@ -57,12 +68,15 @@ openButton.addEventListener('click', () => {
 
 
 document.addEventListener('keydown', (event) => {
-    console.log('key pressed:', event.key)
     if (tiles.length === 0) return
     const imageWidth = tiles[0].clientWidth
+
     if (event.key === 'ArrowRight') {
-        focusedIndex = (focusedIndex + 1) % images.length
-        updateUI(focusedIndex)
+        console.log('arrow right pressed')
+        console.log('scrolleft before:')
+        const newIndex = (focusedIndex + 1) % images.length
+        updateUI(focusedIndex, newIndex)
+        focusedIndex = newIndex
         if (focusedIndex === 0) {
             scrollContainer.style.scrollBehavior = 'auto'
             scrollContainer.scrollLeft = CLONE_COUNT * imageWidth
@@ -73,8 +87,9 @@ document.addEventListener('keydown', (event) => {
     }
 
     if (event.key === 'ArrowLeft') {
-        focusedIndex = (focusedIndex - 1 + images.length) % images.length
-        updateUI(focusedIndex)
+        const newIndex = (focusedIndex - 1 + images.length) % images.length
+        updateUI(focusedIndex, newIndex)
+        focusedIndex = newIndex
         if (focusedIndex === images.length - 1) {
             scrollContainer.style.scrollBehavior = 'auto'
             scrollContainer.scrollLeft = (CLONE_COUNT + images.length - 1) * imageWidth
@@ -98,8 +113,9 @@ scrollContainer.addEventListener('wheel', (event) => {
     const imageWidth = tiles[0].clientWidth
 
     if (event.deltaY > 0) {
-        focusedIndex = (focusedIndex + 1) % images.length
-        updateUI(focusedIndex)
+        const newIndex = (focusedIndex + 1) % images.length
+        updateUI(focusedIndex, newIndex)
+        focusedIndex = newIndex
         if (focusedIndex === 0) {
             scrollContainer.style.scrollBehavior = 'auto'
             scrollContainer.scrollLeft = CLONE_COUNT * imageWidth
@@ -108,8 +124,9 @@ scrollContainer.addEventListener('wheel', (event) => {
             scrollContainer.scrollLeft = (CLONE_COUNT + focusedIndex) * imageWidth
         }
     } else {
-        focusedIndex = (focusedIndex - 1 + images.length) % images.length
-        updateUI(focusedIndex)
+        const newIndex = (focusedIndex - 1 + images.length) % images.length
+        updateUI(focusedIndex, newIndex)
+        focusedIndex = newIndex
         if (focusedIndex === images.length - 1) {
             scrollContainer.style.scrollBehavior = 'auto'
             scrollContainer.scrollLeft = (CLONE_COUNT + images.length - 1) * imageWidth
@@ -123,70 +140,18 @@ scrollContainer.addEventListener('wheel', (event) => {
 })
 
 
-function getStateClass(tileIndex, focusedIndex) {
-    const distance = Math.abs(tileIndex - focusedIndex)
-    const circularDistance = Math.min(distance, images.length - distance)
+function updateUI(oldIndex, newIndex) {
+    // reset old focused and adjacent back to default
+    tiles[oldIndex].className = 'image-tile'
+    tiles[(oldIndex + 1) % images.length].className = 'image-tile'
+    tiles[(oldIndex - 1 + images.length) % images.length].className = 'image-tile'
 
-    if (circularDistance === 0) return 'focused'
-    if (circularDistance === 1) return 'adjacent'
-    return 'distant'
-}
-
-function updateUI(focusedIndex) {
-    tiles.forEach((tile, index) => {
-        console.log(index, focusedIndex)
-        const stateClass = getStateClass(index, focusedIndex)
-        tile.className = `image-tile ${stateClass}`
-    })
-}
-
-// function scrollToImage(index) {
-//     const imageWidth = tiles[0].clientWidth
-//     const targetScrollLeft = (CLONE_COUNT + index) * imageWidth
-//     scrollContainer.style.scrollBehavior = 'auto'
-//     scrollContainer.scrollLeft = targetScrollLeft
-//     scrollContainer.style.scrollBehavior = ''
-// }
-
-function loadImages(folderPath) {
-    const validExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp']
-
-    images = fs.readdirSync(folderPath)
-        .filter(file => validExtensions.includes(path.extname(file).toLowerCase()))
-        .map(file => path.join(folderPath, file))
-
-    if (images.length === 0) return
-    buildStrip();
-}
-
-let scrollEndInitialized = false
-
-function buildStrip() {
-    scrollContainer.innerHTML = ''
-    tiles = []
-    focusedIndex = 0
-
-    // create image tiles
-    images.forEach((imagePath) => {
-        const tile = createTile(imagePath)
-        scrollContainer.appendChild(tile)
-        tiles.push(tile)
-    })
-
-
-    addClones() // add clones
-
-    setTileDimensions() // set dimensions in px
-
-    updateUI(focusedIndex) // assign initial classes
-
-
-    requestAnimationFrame(() => { // scroll only after the DOM is rendered
-        scrollEndInitialized = true
-        scrollContainer.style.scrollBehavior = 'auto'
-        scrollContainer.scrollLeft = CLONE_COUNT * tiles[0].clientWidth
-        scrollContainer.style.scrollBehavior = ''
-    })
+    // set new focused and adjacent
+    console.log(oldIndex, newIndex)
+    console.log(tiles[newIndex])
+    tiles[newIndex].className = 'image-tile focused'
+    tiles[(newIndex + 1) % images.length].className = 'image-tile adjacent'
+    tiles[(newIndex - 1 + images.length) % images.length].className = 'image-tile adjacent'
 }
 
 function createTile(imagePath) {
@@ -224,3 +189,32 @@ function setTileDimensions() {
     })
 }
 
+function buildStrip() {
+    scrollContainer.innerHTML = ''
+    tiles = []
+    focusedIndex = 0
+
+    // create image tiles
+    images.forEach((imagePath) => {
+        const tile = createTile(imagePath)
+        scrollContainer.appendChild(tile)
+        tiles.push(tile)
+    })
+
+
+    addClones() // add clones
+
+    setTileDimensions() // set dimensions in px
+
+    // on startup just set initial state directly
+    tiles[0].className = 'image-tile focused'
+    tiles[1].className = 'image-tile adjacent'
+    tiles[images.length - 1].className = 'image-tile adjacent'
+
+    // the scrolling index is intitally set at the first clone and it
+    // will produce a sliding animation effect therefore the scroll behavior
+    // needs to be chaned whenever we want to set things directly without animation
+    scrollContainer.style.scrollBehavior = 'auto'
+    scrollContainer.scrollLeft = CLONE_COUNT * tiles[0].clientWidth
+    scrollContainer.style.scrollBehavior = ''
+}

@@ -31,6 +31,8 @@ body {
     flex-shrink: 0;
     transition: transform 0.3s ease, opacity 0.3s ease;
     margin: 0 auto;
+    transform: scale(0.3);
+    opacity: 0.3;
 }
 
 .image-tile img {
@@ -42,7 +44,6 @@ body {
 
 .focused {transform: scale(1.0); opacity: 1;}
 .adjacent {transform: scale(0.85); opacity: 0.6;}
-.distant {transform: scale(0.7); opacity: 0.3;}
 
 #open-button {
     position: fixed;
